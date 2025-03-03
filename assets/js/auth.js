@@ -1,53 +1,34 @@
-const bcrypt = dcodeIO.bcrypt; // Asegurar que bcrypt está disponible primero
-
-let users = JSON.parse(localStorage.getItem("users")) || [];
-
-// Convertir contraseñas en texto plano a bcrypt
-users = users.map(user => {
-    if (user.password && !user.password.startsWith("$2a$")) {
-        user.password = bcrypt.hashSync(user.password, 10);
-    }
-    return user;
-});
-
-// Asegurar que 'admin' exista con una contraseña cifrada
-const adminExists = users.some(u => u.user === "admin");
-if (!adminExists) {
-    let hashedAdminPass = bcrypt.hashSync("123456", 10);
-    users.push({ user: "admin", password: hashedAdminPass });
-}
-
-localStorage.setItem("users", JSON.stringify(users));
-
-function login(event) {
+async function login(event) {
     event.preventDefault();
 
     const username = document.querySelector('input[name="user"]').value.trim();
     const password = document.querySelector('input[name="password"]').value.trim();
 
-    let users = JSON.parse(localStorage.getItem("users")) || [];
+    const response = await fetch("/.netlify/functions/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user: username, password }),
+    });
 
-    const userFound = users.find(u => u.user === username);
+    const data = await response.json();
 
-    if (userFound && bcrypt.compareSync(password, userFound.password)) {
-        localStorage.setItem("loggedUser", username);
+    if (data.token) {
+        localStorage.setItem("token", data.token); // Guardamos el token
         window.location.href = "home.html";
     } else {
-        let errorModal = new bootstrap.Modal(document.getElementById("errorModal"));
-        errorModal.show();
+        alert(data.error);
     }
 }
 
 // Proteger páginas
 function protectPage() {
-    if (!localStorage.getItem("loggedUser")) {
+    if (!localStorage.getItem("token")) {
         window.location.href = "login.html";
     }
 }
 
-// Cerrar Cesion
+// Cerrar sesión
 function logout() {
-    console.log("Cerrando sesión..."); // Para depuración
-    localStorage.removeItem("loggedUser"); // Eliminar usuario almacenado
-    window.location.href = "login.html"; // Redirigir al login
+    localStorage.removeItem("token");
+    window.location.href = "login.html";
 }

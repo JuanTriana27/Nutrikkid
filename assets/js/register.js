@@ -9,18 +9,22 @@ async function register(event) {
         return;
     }
 
-    const response = await fetch("/.netlify/functions/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user, password }),
-    });
+    try {
+        const response = await fetch("/.netlify/functions/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user, password }),
+        });
+        const data = await response.json();
 
-    const data = await response.json();
-
-    if (data.error) {
-        alert(data.error);
-    } else {
-        alert("¡Registro exitoso! Ahora puedes iniciar sesión.");
-        window.location.href = "login.html";
+        if (response.ok) {
+            alert(data.message);
+            window.location.href = "login.html";
+        } else {
+            alert(data.error);
+        }
+    } catch (error) {
+        console.error(error);
+        alert("Error al registrar");
     }
-}
+}  

@@ -54,7 +54,7 @@
                 <div class="input-container">
                     <span class="input-icon"><i class="material-icons">lock</i></span>
                     <input type="password" class="input-field" name="password" placeholder="Contraseña" required>
-                    <span class="input-icon password-toggle" onclick="togglePassword(this)">
+                    <span class="input-icon password-toggle">
                         <i class="material-icons">visibility_off</i>
                     </span>
                 </div>
@@ -72,7 +72,14 @@
 
             </form>
 
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"></script>
+            <script>
+                // Mover toda la lógica de eventos a auth.js
+                document.addEventListener('DOMContentLoaded', () => {
+                    const form = document.querySelector('form');
+                    form.addEventListener('submit', login);
+                });
+            </script>
+
             <script src="assets/js/auth.js"></script>
 
         </div>
@@ -87,7 +94,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    Usuario o contraseña incorrectos. Inténtalo de nuevo.
+                    <span id="modalErrorMessage">Usuario o contraseña incorrectos. Inténtalo de nuevo.</span>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
@@ -95,11 +102,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Bootstrap JS (para que el modal funcione) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-
     <script>
         function togglePassword(element) {
             const passwordInput = element.previousElementSibling;

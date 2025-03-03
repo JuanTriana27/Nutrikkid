@@ -1,19 +1,35 @@
-const bcrypt = require("bcryptjs");
-const connectDB = require("./db");
-const User = require("./userModel");
+const connectDB = require('./db');
+const User = require('./userModel');
 
 exports.handler = async (event) => {
-  if (event.httpMethod !== "POST") return { statusCode: 405, body: "Método no permitido" };
-
-  const { user, password } = JSON.parse(event.body);
-  await connectDB();
-
-  const hashedPassword = await bcrypt.hash(password, 10);
-
+  if (event.httpMethod !== 'POST') {
+    return { statusCode: 405, body: JSON.stringify({ error: 'Método no permitido' }) };
+  }
+  
+  // Intentamos conectar a la base de datos
   try {
-    await User.create({ user, password: hashedPassword });
-    return { statusCode: 200, body: JSON.stringify({ message: "Usuario registrado" }) };
+    await connectDB();
   } catch (error) {
-    return { statusCode: 400, body: JSON.stringify({ error: "El usuario ya existe" }) };
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: "Error de conexión a MongoDB: " + error.message })
+    };
+  }
+  
+  // Obtenemos los datos del usuario enviados en la petición
+  const { user, password } = JSON.parse(event.body);
+  
+  try {
+    const newUser = new User({ user, password });
+    await newUser.save();
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ message: "Usuario registrado correctamente" })
+    };
+  } catch (error) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: error.message })
+    };
   }
 };

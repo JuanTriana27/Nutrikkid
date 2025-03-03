@@ -30,7 +30,7 @@ async function login(event) {
 // Para proteger páginas:
 function protectPage() {
     if (!localStorage.getItem("token")) {
-        window.location.href = "login.html";
+        window.location.href = "home.html";
     }
 }
 

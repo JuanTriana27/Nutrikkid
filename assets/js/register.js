@@ -1,28 +1,33 @@
-function register(event) {
-    event.preventDefault();
+// register.js (Frontend)
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelector("form").addEventListener("submit", async (event) => {
+        event.preventDefault();
 
-    let user = document.getElementById("user").value.trim();
-    let password = document.getElementById("password").value.trim();
+        const user = document.getElementById("user").value.trim();
+        const password = document.getElementById("password").value.trim();
 
-    if (!user || !password) {
-        alert("Por favor, completa todos los campos.");
-        return;
-    }
+        if (!user || !password) {
+            alert("Por favor, completa todos los campos.");
+            return;
+        }
 
-    let users = JSON.parse(localStorage.getItem("users")) || [];
+        try {
+            const response = await fetch("/.netlify/functions/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ user, password })
+            });
 
-    let userExists = users.some(u => u.user === user);
-    if (userExists) {
-        alert("El usuario ya existe. Prueba con otro nombre.");
-        return;
-    }
-
-    // Cifrar la contraseña antes de guardarla
-    let hashedPassword = dcodeIO.bcrypt.hashSync(password, 10);
-
-    users.push({ user, password: hashedPassword }); // Usar "user" en lugar de "username"
-    localStorage.setItem("users", JSON.stringify(users));
-
-    alert("¡Registro exitoso! Ahora puedes iniciar sesión.");
-    window.location.href = "login.html";
-}
+            const data = await response.json();
+            if (response.ok) {
+                alert("¡Registro exitoso! Ahora puedes iniciar sesión.");
+                window.location.href = "login.html";
+            } else {
+                alert(data.error || "Error al registrar usuario");
+            }
+        } catch (error) {
+            console.error("Error en la solicitud:", error);
+            alert("Ocurrió un error. Intenta nuevamente.");
+        }
+    });
+});  

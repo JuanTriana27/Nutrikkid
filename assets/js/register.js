@@ -1,4 +1,4 @@
-async function register(event) {
+function register(event) {
     event.preventDefault();
 
     let user = document.getElementById("user").value.trim();
@@ -9,22 +9,20 @@ async function register(event) {
         return;
     }
 
-    try {
-        const response = await fetch("/.netlify/functions/register", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ user, password }),
-        });
-        const data = await response.json();
+    let users = JSON.parse(localStorage.getItem("users")) || [];
 
-        if (response.ok) {
-            alert(data.message);
-            window.location.href = "login.html";
-        } else {
-            alert(data.error);
-        }
-    } catch (error) {
-        console.error(error);
-        alert("Error al registrar");
+    let userExists = users.some(u => u.user === user);
+    if (userExists) {
+        alert("El usuario ya existe. Prueba con otro nombre.");
+        return;
     }
-}  
+
+    // Cifrar la contraseña antes de guardarla
+    let hashedPassword = dcodeIO.bcrypt.hashSync(password, 10);
+
+    users.push({ user, password: hashedPassword }); // Usar "user" en lugar de "username"
+    localStorage.setItem("users", JSON.stringify(users));
+
+    alert("¡Registro exitoso! Ahora puedes iniciar sesión.");
+    window.location.href = "login.html";
+}

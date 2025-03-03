@@ -3,7 +3,7 @@ require('dotenv').config();
 
 const connectDB = async () => {
   if (mongoose.connection.readyState === 1) {
-    console.log("Ya está conectado a MongoDB");
+    console.log("Conectado a MongoDB");
     return;
   }
   try {
